@@ -135,3 +135,5 @@ CORS_ALLOWED_ORIGINS = [
     "https://portfolio-frontend-one-ebon.vercel.app",
     "http://localhost:3000",
 ]
+APPEND_SLASH = False
+
