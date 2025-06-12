@@ -131,10 +131,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "https://portfoliosite-frontend-lsza.vercel.app",  # your actual frontend
-    "http://localhost:3000",  # for local dev
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 APPEND_SLASH = False
 
