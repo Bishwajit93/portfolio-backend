@@ -4,7 +4,7 @@ from rest_framework import status
 from ..models import Skill
 from ..serializers import SkillSerializer
 
-class SkillLiist(APIView):
+class SkillList(APIView):
     
     def get(self, request):
         skills = Skill.objects.all()
@@ -21,7 +21,7 @@ class SkillLiist(APIView):
 
 class SkillDetail(APIView):
     
-    def get_object(self, request,pk):
+    def get_object(self,pk):
         try:
             return Skill.objects.get(pk=pk)
         except Skill.DoesNotExist:

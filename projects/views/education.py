@@ -23,7 +23,7 @@ class EducationDetail(APIView):
     
     def get_object(self, pk):
         try:
-            return EducationSerializer.objects.get(pk=pk)
+            return Education.objects.get(pk=pk)
         except Education.DoesNotExist:
             return None
     
