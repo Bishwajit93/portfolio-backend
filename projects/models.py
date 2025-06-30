@@ -34,7 +34,8 @@ class Experience(models.Model):
     end_date = models.DateField(blank=True, null=True)
     still_working = models.BooleanField(default=False)
     description = models.TextField()
-    
+    location = models.CharField(max_length=100, blank=True)
+
     def __str__(self):
         return f"{self.job_title} at {self.company_name}"
     
