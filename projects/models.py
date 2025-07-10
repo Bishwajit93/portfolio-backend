@@ -8,7 +8,6 @@ class Project(models.Model):
     github_frontend_url = models.URLField(blank=True, null=True)
     github_backend_url = models.URLField(blank=True, null=True)
     live_url = models.URLField(blank=True, null=True)
-    image = models.ImageField(upload_to='project_images/', blank=True, null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     status = models.CharField(
