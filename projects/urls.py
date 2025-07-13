@@ -10,12 +10,12 @@ urlpatterns = [
     path('projects/<int:pk>/', ProjectDetail.as_view()),
 
     # Experience
-    path('experience/', ExperienceList.as_view()),
-    path('experience/<int:pk>/', ExperienceDetail.as_view()),
+    path('experiences/', ExperienceList.as_view()),
+    path('experiences/<int:pk>/', ExperienceDetail.as_view()),
 
     # Education
-    path('education/', EducationList.as_view()),
-    path('education/<int:pk>/', EducationDetail.as_view()),
+    path('educations/', EducationList.as_view()),
+    path('educations/<int:pk>/', EducationDetail.as_view()),
 
     # Skills
     path('skills/', SkillList.as_view()),
