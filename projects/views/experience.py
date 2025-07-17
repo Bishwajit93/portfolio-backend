@@ -3,8 +3,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from ..models import Experience
 from .. serializers import ExperienceSerializer
+from projects.permissions import IsOwnerOrReadOnly
 
 class ExperienceList(APIView):
+    permission_classes = [IsOwnerOrReadOnly]
+    
     def get(self, request):
         experiences = Experience.objects.all()
         serializer = ExperienceSerializer(experiences, many= True)
@@ -19,6 +22,9 @@ class ExperienceList(APIView):
 
 
 class ExperienceDetail(APIView):
+    
+    permission_classes = [IsOwnerOrReadOnly]
+    
     def get_object(self, pk):
         try:
             return Experience.objects.get(pk=pk)

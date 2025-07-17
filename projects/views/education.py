@@ -3,8 +3,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from ..models import Education
 from ..serializers import EducationSerializer
+from projects.permissions import IsOwnerOrReadOnly
 
 class EducationList(APIView):
+    
+    permission_classes = [IsOwnerOrReadOnly]
     
     def get(self, request):
         educations= Education.objects.all()
@@ -20,6 +23,8 @@ class EducationList(APIView):
     
 
 class EducationDetail(APIView):
+    
+    permission_classes = [IsOwnerOrReadOnly]
     
     def get_object(self, pk):
         try:

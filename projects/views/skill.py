@@ -3,8 +3,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from ..models import Skill
 from ..serializers import SkillSerializer
+from projects.permissions import IsOwnerOrReadOnly
 
 class SkillList(APIView):
+    
+    permission_classes = [IsOwnerOrReadOnly]
     
     def get(self, request):
         skills = Skill.objects.all()
@@ -20,6 +23,8 @@ class SkillList(APIView):
     
 
 class SkillDetail(APIView):
+    
+    permission_classes = [IsOwnerOrReadOnly]
     
     def get_object(self,pk):
         try:

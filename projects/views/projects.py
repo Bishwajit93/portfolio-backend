@@ -3,8 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from ..models import Project
 from ..serializers import ProjectSerializer
+from projects.permissions import IsOwnerOrReadOnly
 
 class ProjectList(APIView):
+    
+    permission_classes = [IsOwnerOrReadOnly]
+    
     def get(self, request):
         projects = Project.objects.all()
         serializer = ProjectSerializer(projects, many=True)
@@ -18,6 +22,9 @@ class ProjectList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ProjectDetail(APIView):
+    
+    permission_classes = [IsOwnerOrReadOnly]
+    
     def get_object(self, pk):
         try:
             return Project.objects.get(pk=pk)

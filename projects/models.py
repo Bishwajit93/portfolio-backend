@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Project(models.Model):
@@ -19,6 +20,7 @@ class Project(models.Model):
         ],
         default='In Progress'
     )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="projects")  # or experiences, educations, skills
 
     
     def __str__(self):
@@ -34,6 +36,7 @@ class Experience(models.Model):
     still_working = models.BooleanField(default=False)
     description = models.TextField()
     location = models.CharField(max_length=100, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="experiences")  # or experiences, educations, skills
 
     def __str__(self):
         return f"{self.job_title} at {self.company_name}"
@@ -47,6 +50,7 @@ class Education(models.Model):
     end_date = models.DateField(blank=True, null=True)
     grade = models.CharField(max_length=50, blank=True)
     description = models.TextField(blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="educations")  # or experiences, educations, skills
 
     def __str__(self):
         return f"{self.degree} in {self.field_of_study} at {self.institution_name}"
@@ -55,6 +59,7 @@ class Education(models.Model):
 class Skill(models.Model):
     name = models.CharField(max_length=100)
     level = models.CharField(max_length=100, blank=True)  # e.g. 'Beginner', 'Intermediate', 'Expert'
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="skills")  # or experiences, educations, skills
 
     def __str__(self):
         return f"{self.name} ({self.level})" if self.level else self.name
