@@ -7,6 +7,7 @@ dj-database-url==3.0.0
 Django==5.2.1
 django-cors-headers==4.7.0
 djangorestframework==3.16.0
+djangorestframework_simplejwt==5.5.0
 dotenv==0.9.9
 executing==2.2.0
 gunicorn==23.0.0
@@ -29,6 +30,7 @@ psycopg2-binary==2.9.10
 ptyprocess==0.7.0
 pure_eval==0.2.3
 Pygments==2.19.1
+PyJWT==2.9.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 pyzmq==26.4.0
@@ -41,4 +43,3 @@ traitlets==5.14.3
 typing_extensions==4.13.2
 wcwidth==0.2.13
 wheel==0.45.1
-django-cors-headers
