@@ -10,14 +10,14 @@ class SkillList(APIView):
     permission_classes = [IsOwnerOrReadOnly]
     
     def get(self, request):
-        skills = Skill.objects.all()
+        skills = Skill.objects.filter(user=request.user)
         serializer = SkillSerializer(skills, many= True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request):
         serializer=SkillSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -26,21 +26,21 @@ class SkillDetail(APIView):
     
     permission_classes = [IsOwnerOrReadOnly]
     
-    def get_object(self,pk):
+    def get_object(self,pk, user):
         try:
-            return Skill.objects.get(pk=pk)
+            return Skill.objects.get(pk=pk, user=user)
         except Skill.DoesNotExist:
             return None
         
     def get(self, request, pk):
-        skill= self.get_object(pk)
+        skill= self.get_object(pk, request.user)
         if not skill:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer= SkillSerializer(skill)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def put(self, request,pk):
-        skill=self.get_object(pk)
+        skill=self.get_object(pk, request.user)
         if not skill:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer=SkillSerializer(skill, data=request.data)
@@ -50,7 +50,7 @@ class SkillDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk):
-        skill = self.get_object(pk)#+
+        skill = self.get_object(pk, request.user)
         if not skill:
             return Response(status=status.HTTP_404_NOT_FOUND)
         skill.delete()

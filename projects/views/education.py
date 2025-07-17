@@ -10,14 +10,14 @@ class EducationList(APIView):
     permission_classes = [IsOwnerOrReadOnly]
     
     def get(self, request):
-        educations= Education.objects.all()
+        educations= Education.objects.filter(user=request.user)
         serializer=EducationSerializer(educations, many=True)
         return Response(serializer.data)
     
     def post(self, request):
         serializer=EducationSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
     
@@ -26,21 +26,21 @@ class EducationDetail(APIView):
     
     permission_classes = [IsOwnerOrReadOnly]
     
-    def get_object(self, pk):
+    def get_object(self, pk, user):
         try:
-            return Education.objects.get(pk=pk)
+            return Education.objects.get(pk=pk, user=user)
         except Education.DoesNotExist:
             return None
     
     def get(self, request, pk):
-        education = self.get_object(pk)
+        education = self.get_object(pk, request.user)
         if not education:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = EducationSerializer(education)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def put(self, request, pk):
-        education= self.get_object(pk)
+        education= self.get_object(pk, request.user)
         if not education:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = EducationSerializer(education, data=request.data)
@@ -50,8 +50,8 @@ class EducationDetail(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk):
-        education=self.get_object(pk)
-        if not Education:
+        education=self.get_object(pk, request.user)
+        if not education:
             return Response(status=status.HTTP_404_NOT_FOUND)
         education.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

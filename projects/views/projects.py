@@ -10,14 +10,14 @@ class ProjectList(APIView):
     permission_classes = [IsOwnerOrReadOnly]
     
     def get(self, request):
-        projects = Project.objects.all()
+        projects = Project.objects.filter(user=request.user)
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
     def post(self, request):
         serializer = ProjectSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -25,21 +25,21 @@ class ProjectDetail(APIView):
     
     permission_classes = [IsOwnerOrReadOnly]
     
-    def get_object(self, pk):
+    def get_object(self, pk, user):
         try:
-            return Project.objects.get(pk=pk)
+            return Project.objects.get(pk=pk, user=user)
         except Project.DoesNotExist:
             return None
 
     def get(self, request, pk):
-        project = self.get_object(pk)
+        project = self.get_object(pk, request.user)
         if not project:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProjectSerializer(project)
         return Response(serializer.data)
 
     def put(self, request, pk):
-        project = self.get_object(pk)
+        project = self.get_object(pk, request.user)
         if not project:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProjectSerializer(project, data=request.data)
@@ -49,7 +49,7 @@ class ProjectDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        project = self.get_object(pk)
+        project = self.get_object(pk, request.user)
         if not project:
             return Response(status=status.HTTP_404_NOT_FOUND)
         project.delete()

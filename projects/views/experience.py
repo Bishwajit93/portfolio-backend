@@ -9,14 +9,14 @@ class ExperienceList(APIView):
     permission_classes = [IsOwnerOrReadOnly]
     
     def get(self, request):
-        experiences = Experience.objects.all()
+        experiences = Experience.objects.filter(user=request.user)
         serializer = ExperienceSerializer(experiences, many= True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request):
         serializer = ExperienceSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             return Response(serializer.data, status= status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -25,22 +25,22 @@ class ExperienceDetail(APIView):
     
     permission_classes = [IsOwnerOrReadOnly]
     
-    def get_object(self, pk):
+    def get_object(self, pk, user):
         try:
-            return Experience.objects.get(pk=pk)
+            return Experience.objects.get(pk=pk, user=user)
         except Experience.DoesNotExist:
             return None
         
         
     def get(self, request, pk):
-        experience = self.get_object(pk)
+        experience = self.get_object(pk, request.user)
         if not experience:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ExperienceSerializer(experience)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def put(self, request, pk):
-        experience = self.get_object(pk)
+        experience = self.get_object(pk, request.user)
         if not experience:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer= ExperienceSerializer(experience, data=request.data)
@@ -50,7 +50,7 @@ class ExperienceDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk):
-        experience=self.get_object(pk)
+        experience=self.get_object(pk, request.user)
         if not experience:
             return Response(status=status.HTTP_404_NOT_FOUND)
         experience.delete()
