@@ -20,7 +20,7 @@ class Project(models.Model):
         ],
         default='In Progress'
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="projects")  # or experiences, educations, skills
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="projects", null=True)  # or experiences, educations, skills
 
     
     def __str__(self):
@@ -29,6 +29,7 @@ class Project(models.Model):
     
 
 class Experience(models.Model):
+    
     company_name = models.CharField(max_length=200)
     job_title = models.CharField(max_length=100)
     start_date = models.DateField()
@@ -36,7 +37,7 @@ class Experience(models.Model):
     still_working = models.BooleanField(default=False)
     description = models.TextField()
     location = models.CharField(max_length=100, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="experiences")  # or experiences, educations, skills
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="experiences", null=True)  # or experiences, educations, skills
 
     def __str__(self):
         return f"{self.job_title} at {self.company_name}"
@@ -50,7 +51,7 @@ class Education(models.Model):
     end_date = models.DateField(blank=True, null=True)
     grade = models.CharField(max_length=50, blank=True)
     description = models.TextField(blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="educations")  # or experiences, educations, skills
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="educations", null=True)  # or experiences, educations, skills
 
     def __str__(self):
         return f"{self.degree} in {self.field_of_study} at {self.institution_name}"
@@ -59,7 +60,7 @@ class Education(models.Model):
 class Skill(models.Model):
     name = models.CharField(max_length=100)
     level = models.CharField(max_length=100, blank=True)  # e.g. 'Beginner', 'Intermediate', 'Expert'
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="skills")  # or experiences, educations, skills
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="skills", null=True)  # or experiences, educations, skills
 
     def __str__(self):
         return f"{self.name} ({self.level})" if self.level else self.name
