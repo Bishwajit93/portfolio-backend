@@ -1,16 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from ..models import Project
 from ..serializers import ProjectSerializer
-from projects.permissions import IsOwnerOrReadOnly
 
 class ProjectList(APIView):
-    
-    permission_classes = [IsOwnerOrReadOnly]
-    
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
-        projects = Project.objects.filter(user=request.user)
+        projects = Project.objects.all()
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
@@ -22,24 +21,26 @@ class ProjectList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ProjectDetail(APIView):
-    
-    permission_classes = [IsOwnerOrReadOnly]
-    
-    def get_object(self, pk, user):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_object(self, pk, require_owner=False, user=None):
         try:
-            return Project.objects.get(pk=pk, user=user)
+            obj = Project.objects.get(pk=pk)
+            if require_owner and obj.user != user:
+                return None
+            return obj
         except Project.DoesNotExist:
             return None
 
     def get(self, request, pk):
-        project = self.get_object(pk, request.user)
+        project = self.get_object(pk)
         if not project:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProjectSerializer(project)
         return Response(serializer.data)
 
     def put(self, request, pk):
-        project = self.get_object(pk, request.user)
+        project = self.get_object(pk, require_owner=True, user=request.user)
         if not project:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProjectSerializer(project, data=request.data)
@@ -49,7 +50,7 @@ class ProjectDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        project = self.get_object(pk, request.user)
+        project = self.get_object(pk, require_owner=True, user=request.user)
         if not project:
             return Response(status=status.HTTP_404_NOT_FOUND)
         project.delete()
