@@ -7,12 +7,12 @@ from ..serializers import EducationSerializer
 
 class EducationList(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
-    
+
     def get(self, request):
         educations = Education.objects.all()
         serializer = EducationSerializer(educations, many=True)
         return Response(serializer.data)
-    
+
     def post(self, request):
         serializer = EducationSerializer(data=request.data)
         if serializer.is_valid():
@@ -22,7 +22,7 @@ class EducationList(APIView):
 
 class EducationDetail(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
-    
+
     def get_object(self, pk, require_owner=False, user=None):
         try:
             obj = Education.objects.get(pk=pk)
@@ -31,14 +31,14 @@ class EducationDetail(APIView):
             return obj
         except Education.DoesNotExist:
             return None
-    
+
     def get(self, request, pk):
-        education = self.get_object(pk, require_owner=False)
+        education = self.get_object(pk)
         if not education:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = EducationSerializer(education)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
+        return Response(serializer.data)
+
     def put(self, request, pk):
         education = self.get_object(pk, require_owner=True, user=request.user)
         if not education:
@@ -46,9 +46,9 @@ class EducationDetail(APIView):
         serializer = EducationSerializer(education, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request, pk):
         education = self.get_object(pk, require_owner=True, user=request.user)
         if not education:

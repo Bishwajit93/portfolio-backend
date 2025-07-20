@@ -11,7 +11,7 @@ class SkillList(APIView):
     def get(self, request):
         skills = Skill.objects.all()
         serializer = SkillSerializer(skills, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
     def post(self, request):
         serializer = SkillSerializer(data=request.data)
@@ -38,7 +38,7 @@ class SkillDetail(APIView):
         if not skill:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = SkillSerializer(skill)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
     def put(self, request, pk):
         skill = self.get_object(pk, require_owner=True, user=request.user)
@@ -47,7 +47,7 @@ class SkillDetail(APIView):
         serializer = SkillSerializer(skill, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
