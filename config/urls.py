@@ -5,6 +5,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from projects.views.auth_views import RetrieveUsernameView
+
 urlpatterns = [
     path("admin/", admin.site.urls),
 
@@ -14,4 +16,5 @@ urlpatterns = [
 
     # Your app routes (moved to 'projects/' to avoid conflict)
     path("api/", include("projects.urls")),
+    path("api/auth/username/", RetrieveUsernameView.as_view(), name="username-retrieve"),
 ]

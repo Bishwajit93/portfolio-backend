@@ -117,7 +117,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings to allow only the specified origins
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",                         # Local frontend
     "https://portfolio-frontend-nu-rose.vercel.app", # Live frontend
@@ -136,8 +136,43 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # REST framework settings for JWT Authentication
+################################################################################
+# Django REST framework & JWT configuration
+################################################################################
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    # Optional: enable OpenAPI schema generation
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    # you can customize lifetimes here if you wish:
+    # 'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=5),
+}
+
+DJOSER = {
+    # use email (instead of username) as the login field
+    'LOGIN_FIELD': 'email',
+    # require users to retype their password on registration
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    # disable email activation step (remove if you want activation emails)
+    'SEND_ACTIVATION_EMAIL': False,
+    # you can customize serializers if needed
+    'SERIALIZERS': {},
+}
+
+################################################################################
+# (Optional) OpenAPI / Swagger settings via drf-spectacular
+################################################################################
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'My Portfolio API',
+    'DESCRIPTION': 'API documentation for my portfolio backend',
+    'VERSION': '1.0.0',
+    # any other spectacular settings…
+}
+
