@@ -8,9 +8,9 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # JWT Authentication routes
-    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # Djoser authentication endpoints:
+    path('api/auth/', include('djoser.urls')),       # register, users, password reset, etc.
+    path('api/auth/', include('djoser.urls.jwt')),   # jwt/create (login), jwt/refresh
 
     # Your app routes (moved to 'projects/' to avoid conflict)
     path("api/", include("projects.urls")),
