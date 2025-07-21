@@ -115,15 +115,14 @@ STATIC_URL = 'static/'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings to allow only the specified origins
+## CORS settings to allow only the specified origins
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Your local frontend
-    "https://portfoliosite-frontend-lsza.vercel.app",  # Your live frontend URL
+    "https://portfolio-frontend-nu-rose.vercel.app",  # Your live frontend URL
 ]
 
-APPEND_SLASH = False
-
+# Allow necessary headers for the API requests
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
