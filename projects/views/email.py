@@ -17,7 +17,7 @@ class ContactFormEmailView(APIView):
         try:
             response = resend.Emails.send({
                 "from": "Bishwajit Karmaker (Abdullah) <contact@abdullahstack.com>",      # ✅ Your verified domain
-                "to": ["contact@abdullahstack.com"],                 # ✅ Your Zoho inbox
+                "to": ["bish.karm123@gmail.com"],                 # ✅ Your Zoho inbox
                 "reply_to": [visitor_email],                         # ✅ So you can reply directly
                 "subject": f"Portfolio Contact: {name}",
                 "html": f"""
