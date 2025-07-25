@@ -4,7 +4,9 @@ from rest_framework import status
 import resend
 import os
 
-resend.api_key = os.getenv("RESEND_API_KEY")
+
+resend.api_key = os.environ.get("RESEND_API_KEY")
+
 
 class ContactFormEmailView(APIView):
     def post(self, request):
