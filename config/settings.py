@@ -135,7 +135,7 @@ DJOSER = {
     "LOGIN_FIELD": "email",
     "USER_CREATE_PASSWORD_RETYPE": True,
     "SEND_ACTIVATION_EMAIL": False,
-    "PASSWORD_RESET_CONFIRM_URL": "password-reset/confirm/{uid}/{token}",
+    "PASSWORD_RESET_CONFIRM_URL": "api/auth/users/reset_password_confirm/{uid}/{token}",
     "SEND_PASSWORD_RESET_EMAIL": True,
     "SERIALIZERS": {},
 }
