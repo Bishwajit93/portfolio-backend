@@ -132,14 +132,13 @@ SIMPLE_JWT = {
 
 # Djoser
 DJOSER = {
-    'LOGIN_FIELD': 'email',
-    'USER_CREATE_PASSWORD_RETYPE': True,
-    'SEND_ACTIVATION_EMAIL': False,
-    'PASSWORD_RESET_CONFIRM_URL': 'password-reset/confirm/{uid}/{token}',
-    'SEND_PASSWORD_RESET_EMAIL': True,
-    'SERIALIZERS': {},
+    "LOGIN_FIELD": "email",
+    "USER_CREATE_PASSWORD_RETYPE": True,
+    "SEND_ACTIVATION_EMAIL": False,
+    "PASSWORD_RESET_CONFIRM_URL": "password-reset/confirm/{uid}/{token}",
+    "SEND_PASSWORD_RESET_EMAIL": True,
+    "SERIALIZERS": {},
 }
-
 
 # drf-spectacular
 SPECTACULAR_SETTINGS = {
@@ -147,3 +146,12 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API documentation for my portfolio backend",
     "VERSION": "1.0.0",
 }
+
+# Email settings (use environment variables for safety)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.zoho.eu")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
