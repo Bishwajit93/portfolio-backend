@@ -103,7 +103,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://portfolio-frontend-nu-rose.vercel.app",
-    "https://abdullahstack.com",
+    "https://www.abdullahstack.com",
 ]
 CORS_ALLOW_HEADERS = [
     "accept",
