@@ -3,6 +3,8 @@ from .views.projects import ProjectList, ProjectDetail
 from .views.experience import ExperienceList, ExperienceDetail
 from .views.education import EducationList, EducationDetail
 from .views.skill import SkillList, SkillDetail
+from projects.views.email import ContactFormEmailView
+
 
 urlpatterns = [
     # Projects
@@ -20,4 +22,7 @@ urlpatterns = [
     # Skills
     path('skills/', SkillList.as_view()),
     path('skills/<int:pk>/', SkillDetail.as_view()),
+    
+    # Emails
+    path("contact-form/", ContactFormEmailView.as_view(), name="contact-form"),
 ]
