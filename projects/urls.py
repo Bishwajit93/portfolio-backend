@@ -4,11 +4,13 @@ from .views.experience import ExperienceList, ExperienceDetail
 from .views.education import EducationList, EducationDetail
 from .views.skill import SkillList, SkillDetail
 from .views.auth_views import PasswordResetRequestAPIView, PasswordResetConfirmAPIView
-
+from .views.auth_custom import CustomTokenObtainPairView
 from projects.views.email import ContactFormEmailView
 
 
 urlpatterns = [
+    
+    path("auth/jwt/create/", CustomTokenObtainPairView.as_view(), name="jwt-create"),
     # Projects
     path('projects/', ProjectList.as_view()),
     path('projects/<int:pk>/', ProjectDetail.as_view()),
