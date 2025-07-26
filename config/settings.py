@@ -23,9 +23,9 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
+    "web-production-9824e.up.railway.app",  # Railway production domain
+    "www.abdullahstack.com",               # Your custom domain
     "abdullahstack.com",
-    "www.abdullahstack.com",
-    "portfolio-backend-production.up.railway.app",
 ]
 
 # APPLICATIONS
