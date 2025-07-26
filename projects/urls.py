@@ -29,6 +29,6 @@ urlpatterns = [
     path("contact-form/", ContactFormEmailView.as_view(), name="contact-form"),
     
     # password reset routes
-    path("auth/request-reset-password/", PasswordResetRequestAPIView.as_view(), name="request-reset-password"),
-    path("auth/reset-password-confirm/", PasswordResetConfirmAPIView.as_view(), name="reset-password-confirm"),
+    path("auth/request-reset-password/", PasswordResetRequestAPIView.as_view()),
+    path("auth/reset-password-confirm/", PasswordResetConfirmAPIView.as_view()),
 ]
