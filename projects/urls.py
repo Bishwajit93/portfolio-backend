@@ -3,6 +3,8 @@ from .views.projects import ProjectList, ProjectDetail
 from .views.experience import ExperienceList, ExperienceDetail
 from .views.education import EducationList, EducationDetail
 from .views.skill import SkillList, SkillDetail
+from .views.auth_views import PasswordResetRequestAPIView, PasswordResetConfirmAPIView
+
 from projects.views.email import ContactFormEmailView
 
 
@@ -25,4 +27,8 @@ urlpatterns = [
     
     # Emails
     path("contact-form/", ContactFormEmailView.as_view(), name="contact-form"),
+    
+    # password reset routes
+    path("auth/request-reset-password/", PasswordResetRequestAPIView.as_view(), name="request-reset-password"),
+    path("auth/reset-password-confirm/", PasswordResetConfirmAPIView.as_view(), name="reset-password-confirm"),
 ]

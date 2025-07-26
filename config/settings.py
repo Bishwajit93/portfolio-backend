@@ -34,7 +34,6 @@ INSTALLED_APPS = [
     # Third-party
     "rest_framework",
     "rest_framework_simplejwt",
-    "djoser",
     "drf_spectacular",
     "corsheaders",
 
@@ -59,7 +58,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],  # if you use templates folder
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -130,20 +129,6 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# Your site info from env
-SITE_NAME = os.environ.get("SITE_NAME", "My Portfolio")
-DOMAIN = os.environ.get("DOMAIN", "localhost:8000")
-
-# Djoser settings with correct password reset URL
-DJOSER = {
-    "LOGIN_FIELD": "email",
-    "USER_CREATE_PASSWORD_RETYPE": True,
-    "SEND_ACTIVATION_EMAIL": False,
-    "PASSWORD_RESET_CONFIRM_URL": "password-reset/confirm/{uid}/{token}",
-    "SEND_PASSWORD_RESET_EMAIL": True,
-    "SERIALIZERS": {},
-}
-
 # drf-spectacular
 SPECTACULAR_SETTINGS = {
     "TITLE": "My Portfolio API",
@@ -151,8 +136,11 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
 }
 
-# Email settings (use environment variables)
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# FRONTEND URL for password reset email
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+
+# Email settings
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.zoho.eu")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
@@ -175,5 +163,3 @@ LOGGING = {
     },
 }
 
-# Debug print to confirm EMAIL_HOST_PASSWORD loaded (remove in production)
-print("EMAIL_HOST_PASSWORD:", os.environ.get("EMAIL_HOST_PASSWORD"))

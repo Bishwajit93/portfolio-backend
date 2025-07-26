@@ -1,20 +1,14 @@
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
-
-from projects.views.auth_views import RetrieveUsernameView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # Djoser authentication endpoints:
-    path('api/auth/', include('djoser.urls')),       # register, users, password reset, etc.
-    path('api/auth/', include('djoser.urls.jwt')),   # jwt/create (login), jwt/refresh
+    # JWT authentication endpoints
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 
-    # Your app routes (moved to 'projects/' to avoid conflict)
+    # Your app's API routes
     path("api/", include("projects.urls")),
-    path("api/auth/username/", RetrieveUsernameView.as_view(), name="username-retrieve"),
 ]
