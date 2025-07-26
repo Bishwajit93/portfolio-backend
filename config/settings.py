@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 DEBUG = os.environ.get("DEBUG", "False") == "True"
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*"]  # Adjust if needed
 
 # Installed apps
 INSTALLED_APPS = [
@@ -59,7 +59,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],  # if you use templates folder
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -98,7 +98,7 @@ STATIC_URL = "static/"
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CORS
+# CORS settings
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -130,12 +130,16 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# Djoser
+# Your site info from env
+SITE_NAME = os.environ.get("SITE_NAME", "My Portfolio")
+DOMAIN = os.environ.get("DOMAIN", "localhost:8000")
+
+# Djoser settings with correct password reset URL
 DJOSER = {
     "LOGIN_FIELD": "email",
     "USER_CREATE_PASSWORD_RETYPE": True,
     "SEND_ACTIVATION_EMAIL": False,
-    "PASSWORD_RESET_CONFIRM_URL": "password-reset/confirm/{uid}/{token}",
+    "PASSWORD_RESET_CONFIRM_URL":"password-reset/confirm/{uid}/{token}",
     "SEND_PASSWORD_RESET_EMAIL": True,
     "SERIALIZERS": {},
 }
@@ -147,7 +151,7 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
 }
 
-# Email settings (use environment variables for safety)
+# Email settings (use environment variables)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.zoho.eu")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
@@ -156,6 +160,7 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
+# Logging for errors
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -169,4 +174,6 @@ LOGGING = {
         'level': 'ERROR',
     },
 }
+
+# Debug print to confirm EMAIL_HOST_PASSWORD loaded (remove in production)
 print("EMAIL_HOST_PASSWORD:", os.environ.get("EMAIL_HOST_PASSWORD"))
