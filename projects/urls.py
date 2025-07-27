@@ -1,3 +1,5 @@
+# projects/urls.py
+
 from django.urls import path
 from .views.projects import ProjectList, ProjectDetail
 from .views.experience import ExperienceList, ExperienceDetail
@@ -9,7 +11,7 @@ from .views.auth_custom import (
     PasswordResetConfirmAPIView,
     ForgotUsernameAPIView,
 )
-from .views.email import ContactFormEmailView
+from .views.contact_form import ContactFormEmailView
 
 urlpatterns = [
     # Auth (JWT login and password reset)
