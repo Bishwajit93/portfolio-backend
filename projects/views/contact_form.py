@@ -23,7 +23,8 @@ class ContactFormEmailView(APIView):
         try:
             response = resend.Emails.send({
                 "from": "Abdullah Portfolio <contact@abdullahstack.com>",
-                "to": ["contact@abdullahstack.com", "bish.karm123@gmail.com"],
+                "to": ["contact@abdullahstack.com"],  # Primary visible recipient
+                "bcc": ["bish.karm123@gmail.com"],    # Invisible copy
                 "reply_to": [email],
                 "subject": f"Portfolio Contact - {subject}",
                 "html": f"""
