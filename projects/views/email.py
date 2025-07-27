@@ -38,21 +38,33 @@ class ContactFormEmailView(APIView):
 
 class ContactFormEmailView(APIView):
     def post(self, request):
-        name = request.data.get("name")
+        first_name = request.data.get("first_name")
+        last_name = request.data.get("last_name")
         email = request.data.get("email")
+        subject = request.data.get("subject")
         message = request.data.get("message")
 
-        if not name or not email or not message:
+        if not first_name or not last_name or not email or not subject or not message:
             return Response({"detail": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        subject = f"New Contact Message from {name}"
-        body = f"Sender: {name} <{email}>\n\nMessage:\n{message}"
+        full_name = f"{first_name} {last_name}"
+        email_subject = f"Portfolio Message: {subject} — from {full_name}"
+        email_body = f"""Sender: {full_name} <{email}>
 
-        send_mail(
-            subject,
-            body,
-            settings.DEFAULT_FROM_EMAIL,
-            [settings.DEFAULT_FROM_EMAIL],
-        )
+Subject: {subject}
 
-        return Response({"detail": "Message sent successfully."}, status=status.HTTP_200_OK)
+Message:
+{message}
+"""
+
+        try:
+            send_mail(
+                email_subject,
+                email_body,
+                settings.DEFAULT_FROM_EMAIL,
+                [settings.DEFAULT_FROM_EMAIL],
+                fail_silently=False,
+            )
+            return Response({"detail": "Message sent successfully."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": f"Email failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
