@@ -76,3 +76,24 @@ class PasswordResetConfirmAPIView(APIView):
         user.set_password(new_password)
         user.save()
         return Response({"detail": "Password has been reset."}, status=status.HTTP_200_OK)
+
+
+# ========================
+# Forgot username FLOW
+# ========================
+
+class ForgotUsernameAPIView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        if not email:
+            return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(email=email).first()
+        if user:
+            send_mail(
+                "Your Username",
+                f"Hello,\n\nYour username is: {user.username}\n\nIf you did not request this, please ignore the email.",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+            )
+        return Response({"detail": "If the email is registered, your username has been sent."}, status=status.HTTP_200_OK)

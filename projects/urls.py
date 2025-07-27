@@ -7,15 +7,16 @@ from .views.auth_custom import (
     CustomTokenObtainPairView,
     PasswordResetRequestAPIView,
     PasswordResetConfirmAPIView,
+    ForgotUsernameAPIView,
 )
 from .views.email import ContactFormEmailView
-
 
 urlpatterns = [
     # Auth (JWT login and password reset)
     path("auth/jwt/create/", CustomTokenObtainPairView.as_view(), name="jwt-create"),
     path("auth/request-reset-password/", PasswordResetRequestAPIView.as_view(), name="request-reset-password"),
     path("auth/reset-password-confirm/", PasswordResetConfirmAPIView.as_view(), name="reset-password-confirm"),
+    path("auth/forgot-username/", ForgotUsernameAPIView.as_view(), name="forgot-username"),
 
     # Projects
     path("projects/", ProjectList.as_view(), name="project-list"),
