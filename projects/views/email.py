@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.mail import send_mail
+from django.conf import settings
 import resend
 import os
 
@@ -32,3 +34,25 @@ class ContactFormEmailView(APIView):
         except Exception as e:
             print("Email sending failed:", str(e))
             return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ContactFormEmailView(APIView):
+    def post(self, request):
+        name = request.data.get("name")
+        email = request.data.get("email")
+        message = request.data.get("message")
+
+        if not name or not email or not message:
+            return Response({"detail": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        subject = f"New Contact Message from {name}"
+        body = f"Sender: {name} <{email}>\n\nMessage:\n{message}"
+
+        send_mail(
+            subject,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [settings.DEFAULT_FROM_EMAIL],
+        )
+
+        return Response({"detail": "Message sent successfully."}, status=status.HTTP_200_OK)
