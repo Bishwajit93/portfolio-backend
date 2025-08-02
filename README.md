@@ -18,17 +18,19 @@ This is the backend API for **Bishwajit Karmaker's** portfolio website. It provi
 
 ## 📁 Project Structure
 
-portfolio_backend/
-├── auth/ # Custom auth views (login, reset, forgot username)
-├── projects/ # Project models, serializers, views
-├── education/ # Education models, views
-├── experience/ # Experience models, views
-├── skills/ # Skill models, views
-├── contact/ # Contact form handling
-├── settings.py # Env, CORS, email config, etc.
-├── urls.py # All endpoint routes
-└── ...
+### 🔷 Frontend (`portfolio-frontend/`)
 
+```bash
+portfolio_backend/
+├── auth/           # Custom auth views (login, reset, forgot username)
+├── projects/       # Project models, serializers, views
+├── education/      # Education models, views
+├── experience/     # Experience models, views
+├── skills/         # Skill models, views
+├── contact/        # Contact form handling
+├── settings.py     # Env, CORS, email config, etc.
+├── urls.py         # All endpoint routes
+└── ...
 
 ---
 
@@ -121,7 +123,7 @@ python manage.py runserver
 
     - Deployed with Railway
 
-    - Maintained and built by Bishwajit Karmaker
+    Maintained and built by Bishwajit Karmaker
 
 Crafted with 🔥 by Bishwajit Karmaker
 
