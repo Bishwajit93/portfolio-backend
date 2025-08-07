@@ -136,7 +136,7 @@ REST_FRAMEWORK = {
 # SIMPLE JWT
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # short token, auto-refreshable
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),     # long token
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),     # long token
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
