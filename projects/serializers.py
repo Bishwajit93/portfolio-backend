@@ -6,15 +6,22 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        status = data.get('status', '')
-        start_date = data.get('start_date')
-        end_date = data.get('end_date')
+        status = data.get("status", "")
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
 
-        if status == 'Completed':
+        if status == "Completed":
             if not end_date:
                 raise serializers.ValidationError({"end_date": "End date is required for completed projects."})
             if start_date and end_date < start_date:
                 raise serializers.ValidationError({"end_date": "End date cannot be before start date."})
+
+        elif status == "In Progress":
+            data["end_date"] = None  # Forcefully set end_date to None
+        else:
+            # If status is missing or something else, handle it
+            raise serializers.ValidationError({"status": "Invalid status. Must be 'Completed' or 'In Progress'."})
+
         return data
 
 

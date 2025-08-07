@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 import os
 
 # Load .env if it exists (for local dev)
@@ -134,7 +135,12 @@ REST_FRAMEWORK = {
 
 # SIMPLE JWT
 SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # short token, auto-refreshable
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),     # long token
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
 
 # DRF SPECTACULAR
