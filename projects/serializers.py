@@ -31,9 +31,14 @@ class ExperienceSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        still_working = data.get('still_working', False)
-        start_date = data.get('start_date')
-        end_date = data.get('end_date')
+        still_working = data.get("still_working", False)
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
+
+        # Convert empty string to None
+        if end_date == "":
+            end_date = None
+            data["end_date"] = None
 
         if not still_working:
             if not end_date:
@@ -42,6 +47,7 @@ class ExperienceSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"end_date": "End date cannot be before start date."})
 
         return data
+
 
 
 class EducationSerializer(serializers.ModelSerializer):

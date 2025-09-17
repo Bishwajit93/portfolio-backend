@@ -81,8 +81,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # DATABASE
 DATABASES = {
-    "default": dj_database_url.config(conn_max_age=600, ssl_require=True)
+    "default": dj_database_url.config(
+        conn_max_age=600,
+        ssl_require=os.environ.get("DJANGO_SSL_REQUIRE", "True") == "True"
+    )
 }
+
 
 # PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
