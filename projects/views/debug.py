@@ -12,6 +12,9 @@ import os
 User = get_user_model()
 
 
+def _clean(s: str) -> str:
+    return (s or "").strip().strip('"').strip("'").strip()
+
 def _authorized(request) -> bool:
     """
     Safe rule:
@@ -21,12 +24,13 @@ def _authorized(request) -> bool:
     if getattr(settings, "DEBUG", False):
         return True
 
-    secret = (os.environ.get("DEBUG_SECRET") or "").strip()
+    secret = _clean(os.environ.get("DEBUG_SECRET", ""))
     if not secret:
         return False
 
-    incoming = (request.headers.get("X-Debug-Secret") or "").strip()
+    incoming = _clean(request.headers.get("X-Debug-Secret", ""))
     return incoming == secret
+
 
 
 def _current_db_name() -> str:
