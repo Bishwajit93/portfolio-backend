@@ -42,21 +42,8 @@ class ChangePasswordAPIView(APIView):
         user.save()
 
         # Invalidate all refresh tokens for this user
-        try:
-            for token in OutstandingToken.objects.filter(user=user):
-                BlacklistedToken.objects.get_or_create(token=token)
-        except Exception as e:
-            return Response(
-                {
-                    "detail": "Password updated but token invalidation failed.",
-                    "error": str(e),
-                    "debug": {
-                        "blacklist_app_installed": True,
-                        "user_id": user.pk,
-                    },
-                },
-                status=status.HTTP_200_OK,
-            )
+        for token in OutstandingToken.objects.filter(user=user):
+            BlacklistedToken.objects.get_or_create(token=token)
 
         return Response({"detail": "Password updated. Please log in again."}, status=status.HTTP_200_OK)
 
@@ -65,16 +52,22 @@ class ChangeEmailAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        current_password = request.data.get("current_password")
         new_email = request.data.get("new_email")
-        if not new_email:
+
+        if not current_password or not new_email:
             return Response({"detail": "Missing data."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+
+        if not user.check_password(current_password):
+            return Response({"detail": "Current password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
 
         new_email = new_email.strip().lower()
 
-        if User.objects.filter(email=new_email).exclude(pk=request.user.pk).exists():
+        if User.objects.filter(email=new_email).exclude(pk=user.pk).exists():
             return Response({"detail": "This email is already in use."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = request.user
         user.email = new_email
         user.save()
 
@@ -85,16 +78,24 @@ class ChangeUsernameAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        current_password = request.data.get("current_password")
         new_username = request.data.get("new_username")
-        if not new_username:
+
+        if not current_password or not new_username:
             return Response({"detail": "Missing data."}, status=status.HTTP_400_BAD_REQUEST)
 
-        new_username = new_username.strip()
+        user = request.user
 
-        if User.objects.filter(username=new_username).exclude(pk=request.user.pk).exists():
+        if not user.check_password(current_password):
+            return Response({"detail": "Current password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+
+        new_username = new_username.strip()
+        if not new_username:
+            return Response({"detail": "Username cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(username=new_username).exclude(pk=user.pk).exists():
             return Response({"detail": "This username is already taken."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = request.user
         user.username = new_username
         user.save()
 
