@@ -31,6 +31,19 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
+def _mail_debug_info():
+    return {
+        "email_backend": getattr(settings, "EMAIL_BACKEND", ""),
+        "email_host": getattr(settings, "EMAIL_HOST", ""),
+        "email_port": getattr(settings, "EMAIL_PORT", ""),
+        "email_use_tls": getattr(settings, "EMAIL_USE_TLS", ""),
+        "from_email": getattr(settings, "DEFAULT_FROM_EMAIL", ""),
+        "host_user_present": bool(getattr(settings, "EMAIL_HOST_USER", "")),
+        "host_password_present": bool(getattr(settings, "EMAIL_HOST_PASSWORD", "")),
+        "frontend_url": getattr(settings, "FRONTEND_URL", ""),
+    }
+
+
 # ========================
 # PASSWORD RESET FLOW
 # ========================
@@ -55,7 +68,7 @@ class PasswordResetRequestAPIView(APIView):
         reset_link = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
 
         try:
-            send_mail(
+            sent_count = send_mail(
                 "Reset Your Password",
                 f"Click the link below to reset your password:\n\n{reset_link}",
                 settings.DEFAULT_FROM_EMAIL,
@@ -67,21 +80,20 @@ class PasswordResetRequestAPIView(APIView):
                 {
                     "detail": "Email sending failed.",
                     "error": str(e),
-                    "debug": {
-                        "email_backend": getattr(settings, "EMAIL_BACKEND", ""),
-                        "email_host": getattr(settings, "EMAIL_HOST", ""),
-                        "email_port": getattr(settings, "EMAIL_PORT", ""),
-                        "email_use_tls": getattr(settings, "EMAIL_USE_TLS", ""),
-                        "from_email": getattr(settings, "DEFAULT_FROM_EMAIL", ""),
-                        "host_user_present": bool(getattr(settings, "EMAIL_HOST_USER", "")),
-                        "host_password_present": bool(getattr(settings, "EMAIL_HOST_PASSWORD", "")),
-                        "frontend_url": getattr(settings, "FRONTEND_URL", ""),
-                    },
+                    "debug": _mail_debug_info(),
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        return Response({"detail": "Reset email sent if user exists."}, status=status.HTTP_200_OK)
+        # IMPORTANT: prove if Django actually sent it to SMTP
+        return Response(
+            {
+                "detail": "If the email is registered, you will receive a reset link.",
+                "sent_count": sent_count,
+                "debug": _mail_debug_info(),
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class PasswordResetConfirmAPIView(APIView):
@@ -119,36 +131,37 @@ class ForgotUsernameAPIView(APIView):
 
         email = email.strip().lower()
 
+        # Always return 200 to avoid user enumeration
         user = User.objects.filter(email=email).first()
-        if user:
-            try:
-                send_mail(
-                    "Your Username",
-                    f"Hello,\n\nYour username is: {user.username}\n\nIf you did not request this, please ignore the email.",
-                    settings.DEFAULT_FROM_EMAIL,
-                    [email],
-                    fail_silently=False,
-                )
-            except Exception as e:
-                return Response(
-                    {
-                        "detail": "Email sending failed.",
-                        "error": str(e),
-                        "debug": {
-                            "email_backend": getattr(settings, "EMAIL_BACKEND", ""),
-                            "email_host": getattr(settings, "EMAIL_HOST", ""),
-                            "email_port": getattr(settings, "EMAIL_PORT", ""),
-                            "email_use_tls": getattr(settings, "EMAIL_USE_TLS", ""),
-                            "from_email": getattr(settings, "DEFAULT_FROM_EMAIL", ""),
-                            "host_user_present": bool(getattr(settings, "EMAIL_HOST_USER", "")),
-                            "host_password_present": bool(getattr(settings, "EMAIL_HOST_PASSWORD", "")),
-                            "frontend_url": getattr(settings, "FRONTEND_URL", ""),
-                        },
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
+        if not user:
+            return Response(
+                {"detail": "If the email is registered, your username has been sent."},
+                status=status.HTTP_200_OK,
+            )
+
+        try:
+            sent_count = send_mail(
+                "Your Username",
+                f"Hello,\n\nYour username is: {user.username}\n\nIf you did not request this, please ignore the email.",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            return Response(
+                {
+                    "detail": "Email sending failed.",
+                    "error": str(e),
+                    "debug": _mail_debug_info(),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return Response(
-            {"detail": "If the email is registered, your username has been sent."},
+            {
+                "detail": "If the email is registered, your username has been sent.",
+                "sent_count": sent_count,
+                "debug": _mail_debug_info(),
+            },
             status=status.HTTP_200_OK,
         )
