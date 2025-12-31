@@ -13,6 +13,7 @@ from .views.auth_custom import (
 )
 from .views.contact_form import ContactFormEmailView
 from .views.account import ChangePasswordAPIView, ChangeEmailAPIView, ChangeUsernameAPIView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 
 urlpatterns = [
@@ -21,6 +22,7 @@ urlpatterns = [
     path("auth/request-reset-password/", PasswordResetRequestAPIView.as_view(), name="request-reset-password"),
     path("auth/reset-password-confirm/", PasswordResetConfirmAPIView.as_view(), name="reset-password-confirm"),
     path("auth/forgot-username/", ForgotUsernameAPIView.as_view(), name="forgot-username"),
+    path("auth/jwt/refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
 
     # Account / Security
     path("auth/change-password/", ChangePasswordAPIView.as_view(), name="change-password"),
