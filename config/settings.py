@@ -2,34 +2,60 @@ from pathlib import Path
 from datetime import timedelta
 import os
 
-# Load .env if it exists (for local dev)
-try:
-    from dotenv import load_dotenv
-    dotenv_path = Path(__file__).resolve().parent.parent / ".env"
-    if dotenv_path.exists():
-        load_dotenv(dotenv_path)
-        print(f"Loaded environment from {dotenv_path}")
-    else:
-        print(f"WARNING: .env file not found at {dotenv_path}")
-except ImportError:
-    print("WARNING: python-dotenv is not installed")
-
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY
-SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
-DEBUG = os.environ.get("DEBUG", "False") == "True"
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "web-production-9824e.up.railway.app",  # Railway production domain
-    "www.abdullahstack.com",               # Your custom domain
-    "abdullahstack.com",
-]
+# -------------------------
+# Load .env locally only
+# -------------------------
+try:
+    from dotenv import load_dotenv
 
-# APPLICATIONS
+    dotenv_path = BASE_DIR / ".env"
+    if dotenv_path.exists():
+        load_dotenv(dotenv_path)
+except Exception:
+    pass
+
+
+# -------------------------
+# Helpers
+# -------------------------
+def env_bool(key: str, default: bool = False) -> bool:
+    val = os.environ.get(key)
+    if val is None:
+        return default
+    return val.strip().lower() in ("1", "true", "yes", "on")
+
+
+def env_list(key: str, default: list[str] | None = None) -> list[str]:
+    val = os.environ.get(key)
+    if not val:
+        return default or []
+    return [x.strip() for x in val.split(",") if x.strip()]
+
+
+# -------------------------
+# Core
+# -------------------------
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY", "fallback-secret-key")
+DEBUG = env_bool("DJANGO_DEBUG", env_bool("DEBUG", False))
+
+ALLOWED_HOSTS = env_list(
+    "DJANGO_ALLOWED_HOSTS",
+    default=[
+        "localhost",
+        "127.0.0.1",
+        "web-production-9824e.up.railway.app",
+        "abdullahstack.com",
+        "www.abdullahstack.com",
+    ],
+)
+
+# -------------------------
+# Apps
+# -------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -37,19 +63,18 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework_simplejwt.token_blacklist",
 
-    # Third-party
+    # Third party
+    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
-    "corsheaders",
 
-    # Your app
+    # Local apps
     "projects",
 ]
 
-# MIDDLEWARE
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -80,16 +105,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# DATABASE
+
+# -------------------------
+# Database (Railway-safe: strip newline)
+# -------------------------
+DATABASE_URL = (os.environ.get("DATABASE_URL") or "").strip()
+
 DATABASES = {
-    "default": dj_database_url.config(
+    "default": dj_database_url.parse(
+        DATABASE_URL,
         conn_max_age=600,
-        ssl_require=os.environ.get("DJANGO_SSL_REQUIRE", "True") == "True"
+        ssl_require=env_bool("DJANGO_SSL_REQUIRE", True),
     )
 }
 
 
-# PASSWORD VALIDATION
+# -------------------------
+# Password validation
+# -------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -97,40 +130,49 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# INTERNATIONALIZATION
+
+# -------------------------
+# i18n
+# -------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# STATIC FILES
+
+# -------------------------
+# Static
+# -------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# DEFAULT PRIMARY KEY FIELD TYPE
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CORS
-CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "https://portfolio-frontend-nu-rose.vercel.app",
-    "https://www.abdullahstack.com",
-]
 
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-]
+# -------------------------
+# CORS / CSRF
+# -------------------------
+CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", False)
+CORS_ALLOWED_ORIGINS = env_list(
+    "CORS_ALLOWED_ORIGINS",
+    default=[
+        "http://localhost:3000",
+        "https://www.abdullahstack.com",
+    ],
+)
 
-# REST FRAMEWORK
+CSRF_TRUSTED_ORIGINS = env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[
+        "https://web-production-9824e.up.railway.app",
+        "https://abdullahstack.com",
+        "https://www.abdullahstack.com",
+    ],
+)
+
+
+# -------------------------
+# DRF / JWT
+# -------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -138,55 +180,66 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
-# SIMPLE JWT
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # short token, auto-refreshable
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),     # long token
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
 
-# DRF SPECTACULAR
 SPECTACULAR_SETTINGS = {
     "TITLE": "My Portfolio API",
     "DESCRIPTION": "API documentation for my portfolio backend",
     "VERSION": "1.0.0",
 }
 
-# EMAIL SETTINGS
+
+# -------------------------
+# Email (Zoho SMTP)
+# -------------------------
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.zoho.eu")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
-EMAIL_TIMEOUT = 10
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "10"))
+EMAIL_FAIL_SILENTLY = env_bool("EMAIL_FAIL_SILENTLY", False)
 
-# FRONTEND URL FOR EMAIL LINKS
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
-# SECURITY HEADERS (recommended for production)
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# -------------------------
+# Frontend URL used in reset links
+# -------------------------
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+
+
+# -------------------------
+# Security (production)
+# -------------------------
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True
+
 X_FRAME_OPTIONS = "DENY"
 
-# LOGGING
+
+# -------------------------
+# Logging
+# -------------------------
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "ERROR",
-    },
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO" if DEBUG else "ERROR"},
 }
-
