@@ -14,7 +14,7 @@ from .views.auth_custom import (
 from .views.contact_form import ContactFormEmailView
 from .views.account import ChangePasswordAPIView, ChangeEmailAPIView, ChangeUsernameAPIView
 from rest_framework_simplejwt.views import TokenRefreshView
-
+from .views.debug import DebugStatusAPIView, DebugEmailTestAPIView, DebugFindUserByEmailAPIView
 
 urlpatterns = [
     # Auth (JWT login and password reset)
@@ -48,4 +48,10 @@ urlpatterns = [
 
     # Contact form
     path("contact-form/", ContactFormEmailView.as_view(), name="contact-form"),
+
+    # TEMP DEBUG (DELETE AFTER FIXING)
+    path("debug/status/", DebugStatusAPIView.as_view(), name="debug-status"),
+    path("debug/email-test/", DebugEmailTestAPIView.as_view(), name="debug-email-test"),
+    path("debug/find-user/", DebugFindUserByEmailAPIView.as_view(), name="debug-find-user"),
+
 ]
