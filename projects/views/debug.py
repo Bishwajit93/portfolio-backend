@@ -1,3 +1,5 @@
+# projects/views/debug.py
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -7,26 +9,40 @@ from rest_framework.response import Response
 from rest_framework import status
 import os
 
-
 User = get_user_model()
 
 
 def _authorized(request) -> bool:
-    secret = os.environ.get("DEBUG_SECRET", "")
+    """
+    Safe rule:
+    - If DEBUG=True (local dev), allow without secret.
+    - If DEBUG=False (production), require header secret.
+    """
+    if getattr(settings, "DEBUG", False):
+        return True
+
+    secret = (os.environ.get("DEBUG_SECRET") or "").strip()
     if not secret:
         return False
 
-    # Header name: X-Debug-Secret
-    incoming = request.headers.get("X-Debug-Secret", "")
+    incoming = (request.headers.get("X-Debug-Secret") or "").strip()
     return incoming == secret
+
+
+def _current_db_name() -> str:
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT current_database();")
+            row = cursor.fetchone()
+            return row[0] if row else "unknown"
+    except Exception:
+        return "unknown"
 
 
 class DebugStatusAPIView(APIView):
     """
-    TEMP DEBUG ENDPOINT (delete after fixing).
-
     GET /api/debug/status/
-    Header: X-Debug-Secret: <DEBUG_SECRET>
+    Header: X-Debug-Secret: <DEBUG_SECRET>  (required in production)
     """
     authentication_classes = []
     permission_classes = []
@@ -35,16 +51,13 @@ class DebugStatusAPIView(APIView):
         if not _authorized(request):
             return Response({"detail": "Forbidden."}, status=status.HTTP_403_FORBIDDEN)
 
-        try:
-            db_name = connection.cursor().execute("select current_database()").fetchone()[0]
-        except Exception:
-            db_name = "unknown"
+        db_name = _current_db_name()
 
         return Response(
             {
                 "ok": True,
                 "debug": {
-                    "debug_mode": settings.DEBUG,
+                    "debug_mode": getattr(settings, "DEBUG", False),
                     "allowed_hosts": getattr(settings, "ALLOWED_HOSTS", []),
                     "database_vendor": connection.vendor,
                     "database_name": db_name,
@@ -64,7 +77,11 @@ class DebugStatusAPIView(APIView):
                 },
                 "users": {
                     "count": User.objects.count(),
-                    "first_5": list(User.objects.all().values("id", "username", "email", "is_staff", "is_superuser")[:5]),
+                    "first_5": list(
+                        User.objects.all().values(
+                            "id", "username", "email", "is_staff", "is_superuser"
+                        )[:5]
+                    ),
                 },
             },
             status=status.HTTP_200_OK,
@@ -73,10 +90,8 @@ class DebugStatusAPIView(APIView):
 
 class DebugEmailTestAPIView(APIView):
     """
-    TEMP DEBUG ENDPOINT (delete after fixing).
-
     POST /api/debug/email-test/
-    Header: X-Debug-Secret: <DEBUG_SECRET>
+    Header: X-Debug-Secret: <DEBUG_SECRET> (required in production)
     Body: { "to_email": "..." }
     """
     authentication_classes = []
@@ -94,7 +109,7 @@ class DebugEmailTestAPIView(APIView):
             sent = send_mail(
                 subject="SMTP TEST - AbdullahStack",
                 message="If you received this email, SMTP from Railway is working.",
-                from_email=settings.DEFAULT_FROM_EMAIL,
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
                 recipient_list=[to_email],
                 fail_silently=False,
             )
@@ -102,7 +117,7 @@ class DebugEmailTestAPIView(APIView):
                 {
                     "ok": True,
                     "detail": "send_mail executed.",
-                    "django_send_mail_return": sent,  # usually 1 if sent
+                    "django_send_mail_return": sent,  # usually 1 if Django sent it to SMTP
                 },
                 status=status.HTTP_200_OK,
             )
@@ -128,10 +143,8 @@ class DebugEmailTestAPIView(APIView):
 
 class DebugFindUserByEmailAPIView(APIView):
     """
-    TEMP DEBUG ENDPOINT (delete after fixing).
-
     POST /api/debug/find-user/
-    Header: X-Debug-Secret: <DEBUG_SECRET>
+    Header: X-Debug-Secret: <DEBUG_SECRET> (required in production)
     Body: { "email": "..." }
     """
     authentication_classes = []

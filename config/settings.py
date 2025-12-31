@@ -3,6 +3,7 @@ from datetime import timedelta
 import os
 
 import dj_database_url
+from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,7 +40,9 @@ def env_list(key: str, default: list[str] | None = None) -> list[str]:
 # -------------------------
 # Core
 # -------------------------
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY", "fallback-secret-key")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get(
+    "SECRET_KEY", "fallback-secret-key"
+)
 DEBUG = env_bool("DJANGO_DEBUG", env_bool("DEBUG", False))
 
 ALLOWED_HOSTS = env_list(
@@ -63,20 +66,18 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Third party
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
-
     # Local apps
     "projects",
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # must be first-ish
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -107,13 +108,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 # -------------------------
-# Database (Railway-safe: strip newline)
+# Database (Railway-safe)
 # -------------------------
+# Railway sometimes injects a trailing newline in variables view; strip fixes it.
 DATABASE_URL = (os.environ.get("DATABASE_URL") or "").strip()
 
 DATABASES = {
-    "default": dj_database_url.parse(
-        DATABASE_URL,
+    "default": dj_database_url.config(
+        default=DATABASE_URL,   # safe even if empty
         conn_max_age=600,
         ssl_require=env_bool("DJANGO_SSL_REQUIRE", True),
     )
@@ -124,7 +126,9 @@ DATABASES = {
 # Password validation
 # -------------------------
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -152,10 +156,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CORS / CSRF
 # -------------------------
 CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", False)
+
 CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS",
     default=[
         "http://localhost:3000",
+        "https://abdullahstack.com",
         "https://www.abdullahstack.com",
     ],
 )
@@ -168,6 +174,11 @@ CSRF_TRUSTED_ORIGINS = env_list(
         "https://www.abdullahstack.com",
     ],
 )
+
+# ✅ IMPORTANT: include default headers + your custom header
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-debug-secret",
+]
 
 
 # -------------------------
@@ -199,7 +210,9 @@ SPECTACULAR_SETTINGS = {
 # -------------------------
 # Email (Zoho SMTP)
 # -------------------------
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+)
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.zoho.eu")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
@@ -240,6 +253,11 @@ X_FRAME_OPTIONS = "DENY"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
-    "root": {"handlers": ["console"], "level": "INFO" if DEBUG else "ERROR"},
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO" if DEBUG else "ERROR",
+    },
 }
