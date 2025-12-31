@@ -1,14 +1,17 @@
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
 from django.contrib.auth import get_user_model
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.conf import settings
+
 
 User = get_user_model()
 
@@ -37,21 +40,47 @@ class PasswordResetRequestAPIView(APIView):
         if not email:
             return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        email = email.strip().lower()
+
+        # Always return 200 to avoid user enumeration
         user = User.objects.filter(email=email).first()
         if not user:
-            return Response({"detail": "If the email is registered, you will receive a reset link."},
-                            status=status.HTTP_200_OK)
+            return Response(
+                {"detail": "If the email is registered, you will receive a reset link."},
+                status=status.HTTP_200_OK,
+            )
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
         reset_link = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
 
-        send_mail(
-            "Reset Your Password",
-            f"Click the link below to reset your password:\n\n{reset_link}",
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-        )
+        try:
+            send_mail(
+                "Reset Your Password",
+                f"Click the link below to reset your password:\n\n{reset_link}",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            return Response(
+                {
+                    "detail": "Email sending failed.",
+                    "error": str(e),
+                    "debug": {
+                        "email_backend": getattr(settings, "EMAIL_BACKEND", ""),
+                        "email_host": getattr(settings, "EMAIL_HOST", ""),
+                        "email_port": getattr(settings, "EMAIL_PORT", ""),
+                        "email_use_tls": getattr(settings, "EMAIL_USE_TLS", ""),
+                        "from_email": getattr(settings, "DEFAULT_FROM_EMAIL", ""),
+                        "host_user_present": bool(getattr(settings, "EMAIL_HOST_USER", "")),
+                        "host_password_present": bool(getattr(settings, "EMAIL_HOST_PASSWORD", "")),
+                        "frontend_url": getattr(settings, "FRONTEND_URL", ""),
+                    },
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
         return Response({"detail": "Reset email sent if user exists."}, status=status.HTTP_200_OK)
 
 
@@ -67,7 +96,7 @@ class PasswordResetConfirmAPIView(APIView):
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             user = User.objects.get(pk=uid)
-        except:
+        except Exception:
             return Response({"detail": "Invalid UID."}, status=status.HTTP_400_BAD_REQUEST)
 
         if not default_token_generator.check_token(user, token):
@@ -75,25 +104,51 @@ class PasswordResetConfirmAPIView(APIView):
 
         user.set_password(new_password)
         user.save()
+
         return Response({"detail": "Password has been reset."}, status=status.HTTP_200_OK)
 
 
 # ========================
-# Forgot username FLOW
+# FORGOT USERNAME FLOW
 # ========================
-
 class ForgotUsernameAPIView(APIView):
     def post(self, request):
         email = request.data.get("email")
         if not email:
             return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        email = email.strip().lower()
+
         user = User.objects.filter(email=email).first()
         if user:
-            send_mail(
-                "Your Username",
-                f"Hello,\n\nYour username is: {user.username}\n\nIf you did not request this, please ignore the email.",
-                settings.DEFAULT_FROM_EMAIL,
-                [email],
-            )
-        return Response({"detail": "If the email is registered, your username has been sent."}, status=status.HTTP_200_OK)
+            try:
+                send_mail(
+                    "Your Username",
+                    f"Hello,\n\nYour username is: {user.username}\n\nIf you did not request this, please ignore the email.",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                return Response(
+                    {
+                        "detail": "Email sending failed.",
+                        "error": str(e),
+                        "debug": {
+                            "email_backend": getattr(settings, "EMAIL_BACKEND", ""),
+                            "email_host": getattr(settings, "EMAIL_HOST", ""),
+                            "email_port": getattr(settings, "EMAIL_PORT", ""),
+                            "email_use_tls": getattr(settings, "EMAIL_USE_TLS", ""),
+                            "from_email": getattr(settings, "DEFAULT_FROM_EMAIL", ""),
+                            "host_user_present": bool(getattr(settings, "EMAIL_HOST_USER", "")),
+                            "host_password_present": bool(getattr(settings, "EMAIL_HOST_PASSWORD", "")),
+                            "frontend_url": getattr(settings, "FRONTEND_URL", ""),
+                        },
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+        return Response(
+            {"detail": "If the email is registered, your username has been sent."},
+            status=status.HTTP_200_OK,
+        )

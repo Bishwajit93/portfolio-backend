@@ -12,6 +12,8 @@ from .views.auth_custom import (
     ForgotUsernameAPIView,
 )
 from .views.contact_form import ContactFormEmailView
+from .views.account import ChangePasswordAPIView, ChangeEmailAPIView, ChangeUsernameAPIView
+
 
 urlpatterns = [
     # Auth (JWT login and password reset)
@@ -19,6 +21,12 @@ urlpatterns = [
     path("auth/request-reset-password/", PasswordResetRequestAPIView.as_view(), name="request-reset-password"),
     path("auth/reset-password-confirm/", PasswordResetConfirmAPIView.as_view(), name="reset-password-confirm"),
     path("auth/forgot-username/", ForgotUsernameAPIView.as_view(), name="forgot-username"),
+
+    # Account / Security
+    path("auth/change-password/", ChangePasswordAPIView.as_view(), name="change-password"),
+    path("auth/change-email/", ChangeEmailAPIView.as_view(), name="change-email"),
+    path("auth/change-username/", ChangeUsernameAPIView.as_view(), name="change-username"),
+
 
     # Projects
     path("projects/", ProjectList.as_view(), name="project-list"),
